@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      # Installs a real `gradle` binary on the runner's PATH. This repo doesn't commit a
+      # gradle-wrapper.jar (it's a binary that couldn't be generated in the environment this
+      # project was built in - see README), so CI calls `gradle` directly instead of
+      # `./gradlew`. If you generate a wrapper locally later (`gradle wrapper`) and commit
+      # it, you can switch this back to `./gradlew build` if you'd rather pin an exact
+      # Gradle version.
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.5.1"
+
+      - name: Build
+        run: gradle build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RLScoreboard
+          path: build/libs/RLScoreboard-*.jar

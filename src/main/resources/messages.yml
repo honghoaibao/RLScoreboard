@@ -1,0 +1,4 @@
+# Messages used by /rlscoreboard. Colour codes use '&' (and '&#RRGGBB' for hex).
+prefix: "&8[&6RLScoreboard&8] &r"
+no-permission: "&cYou don't have permission to do that."
+reloaded: "&aReloaded config, scoreboards and leaderboards."
