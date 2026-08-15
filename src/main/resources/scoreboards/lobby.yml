@@ -1,0 +1,23 @@
+# Example of a higher-priority, condition-gated board: only shown in the
+# "world" world, and only overrides survival.yml while that condition passes.
+scoreboards:
+  lobby:
+    enabled: true
+    priority: 10
+    fallback: false
+
+    title:
+      text: "&b&lLOBBY"
+
+    lines:
+      - "&8&m----------------"
+      - "&f👤 &7%rl_player_name%"
+      - "&a👥 &7Online: &f%rl_online%"
+      - "&8&m----------------"
+
+    update:
+      interval: 5
+
+    conditions:
+      world:
+        - world
