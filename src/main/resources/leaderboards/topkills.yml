@@ -1,0 +1,33 @@
+# Uses the built-in "topkills" datasource - a vanilla Statistic-based ranking
+# that needs no other plugin installed. Ranks currently-online players only
+# (see StatisticDataSource for why); a persistent offline-capable version is
+# a natural Phase 2 addition once a storage backend is wired up.
+leaderboards:
+  topkills:
+    enabled: true
+    priority: 0
+
+    display:
+      type: SIDEBAR   # published as a normal board via SidebarLeaderboardRenderer
+
+    title:
+      - "&c&l⚔ TOP KILLS"
+
+    datasource:
+      type: topkills
+
+    entries: 5
+
+    update:
+      interval: 30   # seconds
+
+    format:
+      - "&e%position% &f%player%"
+      - "&7%value% kills"
+
+    top:
+      1: "&6🥇"
+      2: "&f🥈"
+      3: "&c🥉"
+
+    conditions: {}
