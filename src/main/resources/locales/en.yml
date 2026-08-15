@@ -1,0 +1,40 @@
+# RLScoreboard - English (default) messages.
+# Colour codes use '&' (and '&#RRGGBB' for hex). Tokens in {curly braces} are substituted
+# by the plugin - keep them exactly as-is if you customise a line.
+#
+# This file is always used as the fallback for any key missing from another locale (e.g.
+# locales/vi.yml), so it must contain every key the plugin can look up.
+
+no_permission: "&cYou don't have permission to do that."
+reload_success: "&aReloaded configuration, locales, scoreboards and leaderboards."
+version: "&7RLScoreboard v{version}"
+player_only: "&cThis command must be run in-game."
+
+debug_active_board: "&7Active board: &f{board}"
+debug_loaded_boards: "&7Loaded boards: &f{count}"
+debug_loaded_leaderboards: "&7Loaded leaderboards: &f{count}"
+
+board_list: "&7Boards: &f{boards}"
+board_reload_success: "&aScoreboards reloaded."
+
+leaderboard_list: "&7Leaderboards: &f{leaderboards}"
+leaderboard_create_usage: "&cUsage: /rlscoreboard leaderboard create <id> [SIDEBAR|HOLOGRAM|TAB|NPC|GUI] [datasource]"
+leaderboard_created: "&aCreated leaderboard '{id}'."
+leaderboard_delete_usage: "&cUsage: /rlscoreboard leaderboard delete <id>"
+leaderboard_deleted: "&aDeleted leaderboard '{id}'."
+leaderboard_not_found: "&cNo leaderboard named '{id}'."
+leaderboard_setlocation_usage: "&cUsage: /rlscoreboard leaderboard setlocation <id>"
+leaderboard_location_set: "&aLocation for '{id}' set to your current position."
+leaderboard_reload_success: "&aLeaderboards reloaded."
+leaderboard_view_usage: "&cUsage: /rlscoreboard leaderboard view <id>"
+leaderboard_no_gui_snapshot: "&cNo GUI snapshot for '{id}' yet - check it's a GUI-type leaderboard and has refreshed at least once."
+leaderboard_history_usage: "&cUsage: /rlscoreboard leaderboard history <id> [hours-ago]"
+leaderboard_history_empty: "&7No history found for '{id}' around {hours} hour(s) ago."
+leaderboard_history_header: "&6'{id}' &7- snapshot from ~{hours} hour(s) ago:"
+leaderboard_history_entry: "&e#{position} &f{player} &7- &f{value}"
+leaderboard_gui_value: "&7Value: &f{value}"
+
+storage_disabled: "&cStorage isn't enabled - see storage.enabled in config.yml."
+
+help_header: "&6RLScoreboard &7- &f/rlscoreboard reload|version|debug|board|leaderboard"
+help_leaderboard: "&7/rlscoreboard leaderboard list|create|delete|setlocation|reload|view|history"
