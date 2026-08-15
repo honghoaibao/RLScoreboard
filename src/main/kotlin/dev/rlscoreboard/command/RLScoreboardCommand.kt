@@ -12,7 +12,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-/** Implements every subcommand from section 14 of the design spec. */
+/** Implements every subcommand from section 14 of the design spec. All player/admin-facing text is
+ *  resolved through [dev.rlscoreboard.config.LocaleManager] - see locales/en.yml and locales/vi.yml. */
 class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -34,33 +35,33 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
     private fun handleReload(sender: CommandSender) {
         if (!sender.hasPermission("rlscoreboard.reload")) return denyPermission(sender)
         plugin.reloadEverything()
-        sender.sendMessage(prefixed(plugin.configManager.message("reloaded", "&aReloaded config, scoreboards and leaderboards.")))
+        sender.sendMessage(prefixed(msg("reload_success")))
     }
 
     private fun handleVersion(sender: CommandSender) {
-        sender.sendMessage(prefixed("&7RLScoreboard v${plugin.pluginMeta.version}"))
+        sender.sendMessage(prefixed(msg("version", "version" to plugin.pluginMeta.version)))
     }
 
     private fun handleDebug(sender: CommandSender) {
         if (!sender.hasPermission("rlscoreboard.debug")) return denyPermission(sender)
         if (sender !is Player) {
-            sender.sendMessage(prefixed("&cThis command must be run in-game."))
+            sender.sendMessage(prefixed(msg("player_only")))
             return
         }
         val board = plugin.boardManager.resolveBoardFor(sender)
-        sender.sendMessage(prefixed("&7Active board: &f${board?.id ?: "none"}"))
-        sender.sendMessage(prefixed("&7Loaded boards: &f${plugin.boardManager.all().size}"))
-        sender.sendMessage(prefixed("&7Loaded leaderboards: &f${plugin.leaderboardEngine.manager.all().size}"))
+        sender.sendMessage(prefixed(msg("debug_active_board", "board" to (board?.id ?: "none"))))
+        sender.sendMessage(prefixed(msg("debug_loaded_boards", "count" to plugin.boardManager.all().size.toString())))
+        sender.sendMessage(prefixed(msg("debug_loaded_leaderboards", "count" to plugin.leaderboardEngine.manager.all().size.toString())))
     }
 
     private fun handleBoard(sender: CommandSender, args: Array<out String>) {
         if (args.size < 2) return sendHelp(sender)
         when (args[1].lowercase()) {
-            "list" -> sender.sendMessage(prefixed("&7Boards: &f${plugin.boardManager.all().joinToString(", ") { it.id }}"))
+            "list" -> sender.sendMessage(prefixed(msg("board_list", "boards" to plugin.boardManager.all().joinToString(", ") { it.id })))
             "reload" -> {
                 if (!sender.hasPermission("rlscoreboard.reload")) return denyPermission(sender)
                 plugin.boardManager.reload()
-                sender.sendMessage(prefixed("&aScoreboards reloaded."))
+                sender.sendMessage(prefixed(msg("board_reload_success")))
             }
             else -> sendHelp(sender)
         }
@@ -71,48 +72,48 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
         val lm = plugin.leaderboardEngine.manager
 
         when (args[1].lowercase()) {
-            "list" -> sender.sendMessage(prefixed("&7Leaderboards: &f${lm.all().joinToString(", ") { it.id }}"))
+            "list" -> sender.sendMessage(prefixed(msg("leaderboard_list", "leaderboards" to lm.all().joinToString(", ") { it.id })))
             "create" -> {
                 if (!sender.hasPermission("rlscoreboard.leaderboard.manage")) return denyPermission(sender)
                 val id = args.getOrNull(2)
                 if (id == null) {
-                    sender.sendMessage(prefixed("&cUsage: /rlscoreboard leaderboard create <id> [SIDEBAR|HOLOGRAM|TAB|NPC|GUI] [datasource]"))
+                    sender.sendMessage(prefixed(msg("leaderboard_create_usage")))
                     return
                 }
                 val type = args.getOrNull(3) ?: "SIDEBAR"
                 val dataSource = args.getOrNull(4) ?: "manual"
                 lm.create(id, type, dataSource)
-                sender.sendMessage(prefixed("&aCreated leaderboard '$id'."))
+                sender.sendMessage(prefixed(msg("leaderboard_created", "id" to id)))
             }
             "delete" -> {
                 if (!sender.hasPermission("rlscoreboard.leaderboard.manage")) return denyPermission(sender)
                 val id = args.getOrNull(2)
                 if (id == null) {
-                    sender.sendMessage(prefixed("&cUsage: /rlscoreboard leaderboard delete <id>"))
+                    sender.sendMessage(prefixed(msg("leaderboard_delete_usage")))
                     return
                 }
-                if (lm.delete(id)) sender.sendMessage(prefixed("&aDeleted leaderboard '$id'."))
-                else sender.sendMessage(prefixed("&cNo leaderboard named '$id'."))
+                if (lm.delete(id)) sender.sendMessage(prefixed(msg("leaderboard_deleted", "id" to id)))
+                else sender.sendMessage(prefixed(msg("leaderboard_not_found", "id" to id)))
             }
             "setlocation" -> {
                 if (!sender.hasPermission("rlscoreboard.leaderboard.manage")) return denyPermission(sender)
                 if (sender !is Player) {
-                    sender.sendMessage(prefixed("&cThis command must be run in-game."))
+                    sender.sendMessage(prefixed(msg("player_only")))
                     return
                 }
                 val id = args.getOrNull(2)
                 if (id == null) {
-                    sender.sendMessage(prefixed("&cUsage: /rlscoreboard leaderboard setlocation <id>"))
+                    sender.sendMessage(prefixed(msg("leaderboard_setlocation_usage")))
                     return
                 }
                 val loc = sender.location
                 lm.setLocation(id, LeaderboardLocation(loc.world!!.name, loc.x, loc.y, loc.z, loc.yaw, loc.pitch))
-                sender.sendMessage(prefixed("&aLocation for '$id' set to your current position."))
+                sender.sendMessage(prefixed(msg("leaderboard_location_set", "id" to id)))
             }
             "reload" -> {
                 if (!sender.hasPermission("rlscoreboard.leaderboard.manage")) return denyPermission(sender)
                 lm.reload()
-                sender.sendMessage(prefixed("&aLeaderboards reloaded."))
+                sender.sendMessage(prefixed(msg("leaderboard_reload_success")))
             }
             "view" -> handleLeaderboardView(sender, args)
             "history" -> handleLeaderboardHistory(sender, args)
@@ -123,18 +124,18 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
     /** Opens a GUI-type leaderboard's latest snapshot - any player can use this, no admin permission needed. */
     private fun handleLeaderboardView(sender: CommandSender, args: Array<out String>) {
         if (sender !is Player) {
-            sender.sendMessage(prefixed("&cThis command must be run in-game."))
+            sender.sendMessage(prefixed(msg("player_only")))
             return
         }
         val id = args.getOrNull(2)
         if (id == null) {
-            sender.sendMessage(prefixed("&cUsage: /rlscoreboard leaderboard view <id>"))
+            sender.sendMessage(prefixed(msg("leaderboard_view_usage")))
             return
         }
         val renderer = plugin.leaderboardEngine.manager.rendererFor("GUI") as? GuiLeaderboardRenderer
         val inventory = renderer?.open(id)
         if (inventory == null) {
-            sender.sendMessage(prefixed("&cNo GUI snapshot for '$id' yet - check it's a GUI-type leaderboard and has refreshed at least once."))
+            sender.sendMessage(prefixed(msg("leaderboard_no_gui_snapshot", "id" to id)))
         } else {
             sender.openInventory(inventory)
         }
@@ -144,12 +145,12 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
     private fun handleLeaderboardHistory(sender: CommandSender, args: Array<out String>) {
         val id = args.getOrNull(2)
         if (id == null) {
-            sender.sendMessage(prefixed("&cUsage: /rlscoreboard leaderboard history <id> [hours-ago]"))
+            sender.sendMessage(prefixed(msg("leaderboard_history_usage")))
             return
         }
         val repository = plugin.leaderboardHistoryRepository
         if (repository == null) {
-            sender.sendMessage(prefixed("&cStorage isn't enabled - see storage.enabled in config.yml."))
+            sender.sendMessage(prefixed(msg("storage_disabled")))
             return
         }
         val hoursAgo = args.getOrNull(3)?.toLongOrNull() ?: 24L
@@ -159,11 +160,16 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
             val entries = repository.snapshotBefore(id, beforeMillis, 10)
             Bukkit.getScheduler().runTask(plugin, Runnable {
                 if (entries.isEmpty()) {
-                    sender.sendMessage(prefixed("&7No history found for '$id' around $hoursAgo hour(s) ago."))
+                    sender.sendMessage(prefixed(msg("leaderboard_history_empty", "id" to id, "hours" to hoursAgo.toString())))
                 } else {
-                    sender.sendMessage(prefixed("&6'$id' &7- snapshot from ~$hoursAgo hour(s) ago:"))
+                    sender.sendMessage(prefixed(msg("leaderboard_history_header", "id" to id, "hours" to hoursAgo.toString())))
                     entries.forEachIndexed { index, entry ->
-                        sender.sendMessage(prefixed("&e#${index + 1} &f${entry.displayName} &7- &f${entry.formattedValue}"))
+                        sender.sendMessage(prefixed(msg(
+                            "leaderboard_history_entry",
+                            "position" to (index + 1).toString(),
+                            "player" to entry.displayName,
+                            "value" to entry.formattedValue
+                        )))
                     }
                 }
             })
@@ -188,13 +194,16 @@ class RLScoreboardCommand(private val plugin: RLScoreboardPlugin) : CommandExecu
         }
 
     private fun sendHelp(sender: CommandSender) {
-        sender.sendMessage(prefixed("&6RLScoreboard &7- &f/rlscoreboard reload|version|debug|board|leaderboard"))
-        sender.sendMessage(prefixed("&7/rlscoreboard leaderboard list|create|delete|setlocation|reload|view|history"))
+        sender.sendMessage(prefixed(msg("help_header")))
+        sender.sendMessage(prefixed(msg("help_leaderboard")))
     }
 
     private fun denyPermission(sender: CommandSender) {
-        sender.sendMessage(prefixed(plugin.configManager.message("no-permission", "&cYou don't have permission to do that.")))
+        sender.sendMessage(prefixed(msg("no_permission")))
     }
+
+    private fun msg(key: String, vararg placeholders: Pair<String, String>): String =
+        plugin.localeManager.get(key, *placeholders)
 
     private fun prefixed(text: String): Component = ColorUtil.toComponent(text)
 }

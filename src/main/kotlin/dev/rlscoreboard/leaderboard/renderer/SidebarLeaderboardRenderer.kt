@@ -7,6 +7,7 @@ import dev.rlscoreboard.api.model.BoardLine
 import dev.rlscoreboard.api.model.LeaderboardDefinition
 import dev.rlscoreboard.api.model.LeaderboardEntry
 import dev.rlscoreboard.condition.ConditionSet
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.core.BoardManager
 
 /**
@@ -14,14 +15,20 @@ import dev.rlscoreboard.core.BoardManager
  * with every other board through the existing [BoardManager] instead of RLScoreboard
  * needing a second, parallel sidebar system just for leaderboards.
  */
-class SidebarLeaderboardRenderer(private val boardManager: BoardManager) : LeaderboardRenderer {
+class SidebarLeaderboardRenderer(
+    private val boardManager: BoardManager,
+    private val localeManager: LocaleManager
+) : LeaderboardRenderer {
     override val type = "SIDEBAR"
 
     override fun render(definition: LeaderboardDefinition, entries: List<LeaderboardEntry>) {
         val lines = mutableListOf<BoardLine>()
+        if (entries.isEmpty()) {
+            lines += BoardLine(AnimatedText.static(localeManager.get("leaderboard_empty")), ConditionSet.EMPTY)
+        }
         entries.forEachIndexed { index, entry ->
             val position = index + 1
-            val icon = definition.topIcons[position] ?: "&7#$position"
+            val icon = definition.topIcons[position] ?: DefaultRankIcon.forPosition(position)
             for (formatLine in definition.entryFormat) {
                 val resolved = formatLine
                     .replace("%position%", icon)

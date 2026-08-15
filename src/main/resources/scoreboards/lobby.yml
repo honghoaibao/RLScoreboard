@@ -1,5 +1,6 @@
 # Example of a higher-priority, condition-gated board: only shown in the
 # "world" world, and only overrides survival.yml while that condition passes.
+# Same clean label/value styling as survival.yml (see comment there).
 scoreboards:
   lobby:
     enabled: true
@@ -11,8 +12,9 @@ scoreboards:
 
     lines:
       - "&8&m----------------"
-      - "&f👤 &7%rl_player_name%"
-      - "&a👥 &7Online: &f%rl_online%"
+      - "&f%rl_player_name%"
+      - ""
+      - "&7Online: &f%rl_online%"
       - "&8&m----------------"
 
     update:

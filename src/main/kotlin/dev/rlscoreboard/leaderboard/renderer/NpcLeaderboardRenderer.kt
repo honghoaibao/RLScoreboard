@@ -3,6 +3,7 @@ package dev.rlscoreboard.leaderboard.renderer
 import dev.rlscoreboard.api.LeaderboardRenderer
 import dev.rlscoreboard.api.model.LeaderboardDefinition
 import dev.rlscoreboard.api.model.LeaderboardEntry
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.util.ColorUtil
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  * that needs either raw packet manipulation or a Citizens dependency, and this plugin adds
  * neither (see README) - a plain mob entity needs nothing beyond stock Paper API.
  */
-class NpcLeaderboardRenderer : LeaderboardRenderer {
+class NpcLeaderboardRenderer(private val localeManager: LocaleManager) : LeaderboardRenderer {
     override val type = "NPC"
 
     private val activeNpc = ConcurrentHashMap<String, Villager>()
@@ -35,10 +36,10 @@ class NpcLeaderboardRenderer : LeaderboardRenderer {
 
         val top = entries.firstOrNull()
         val npcName = if (top != null) {
-            val icon = definition.topIcons[1] ?: "&6🥇"
+            val icon = definition.topIcons[1] ?: DefaultRankIcon.forPosition(1)
             "$icon &f${top.displayName} &7- &f${top.formattedValue}"
         } else {
-            definition.title.firstOrNull() ?: definition.id
+            localeManager.get("leaderboard_empty")
         }
 
         val npc = activeNpc.getOrPut(definition.id) { spawnNpc(world, base) }
@@ -49,7 +50,7 @@ class NpcLeaderboardRenderer : LeaderboardRenderer {
         extraLines += definition.title
         entries.drop(1).forEachIndexed { index, entry ->
             val position = index + 2
-            val icon = definition.topIcons[position] ?: "&7#$position"
+            val icon = definition.topIcons[position] ?: DefaultRankIcon.forPosition(position)
             for (formatLine in definition.entryFormat) {
                 extraLines += formatLine
                     .replace("%position%", icon)

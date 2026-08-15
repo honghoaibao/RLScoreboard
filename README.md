@@ -3,11 +3,12 @@
 Config-driven scoreboard + leaderboard framework for Paper servers. Built for Minecraft
 26.2 / Paper API 26.2 / Java 25 / Kotlin.
 
-> **Status: Phase 1 + 2 + 3, build-tested on GitHub Actions.** Every item from the original
-> design spec has an implementation. One piece (a native Jobs Reborn datasource) was tried,
-> broke the actual build on the first CI run, and was reverted to the safer detection-only
-> approach — see [What broke on the first real build](#what-broke-on-the-first-real-build)
-> for exactly what happened. Everything else compiled and resolved cleanly on the first try.
+> **Status: Phase 1 + 2 + 3 + 4 (localization), build-tested on GitHub Actions.** Every item
+> from the original design spec has an implementation. One piece (a native Jobs Reborn
+> datasource) was tried, broke the actual build on the first CI run, and was reverted to the
+> safer detection-only approach — see [What broke on the first real build](#what-broke-on-the-first-real-build)
+> for exactly what happened, and [Localization](#localization) for why Phase 4 deliberately
+> left that decision untouched. Everything else compiled and resolved cleanly on the first try.
 
 ## Everything that's implemented
 
@@ -65,20 +66,92 @@ conditions, data sources, and leaderboard renderers, and to read/force boards.
 
 **CI** — GitHub Actions build on every push (`.github/workflows/build.yml`).
 
+## Localization
+
+English (`en`) is the default and its wording/behavior is unchanged. Vietnamese (`vi`) has
+been added as a second, fully-translated language.
+
+- **Config**: `language: en` in `config.yml` (commented with the supported codes). Set it to
+  `vi` to switch. An unrecognised value falls back to `en` with a warning logged - it never
+  crashes and never leaves a blank/`null` message on screen.
+- **Files**: `locales/en.yml` and `locales/vi.yml` under the plugin's data folder (bundled in
+  the jar, extracted on first run - same mechanism already used for `messages.yml` and the
+  default `scoreboards/`/`leaderboards/` files). 28 keys, one per distinct player/admin-facing
+  string in the plugin (everything `/rlscoreboard` sends, plus one GUI-leaderboard item lore
+  line) - see [`LocaleManager`](src/main/kotlin/dev/rlscoreboard/config/LocaleManager.kt).
+- **Fallback chain**: active language → `en` → a visible placeholder (`&c[missing locale
+  key: ...]`) if a key is somehow missing from both. A key present in `en.yml` but absent from
+  `vi.yml` silently falls back to the English line rather than showing blank text.
+- **Scope, deliberately**: only plugin-generated chat/GUI text is localized. Command names
+  (`/rlscoreboard board`, `leaderboard setlocation`, etc.), permission nodes, placeholders
+  (`%rl_*%`), and the *content* of your own `scoreboards/*.yml` / `leaderboards/*.yml` files
+  are untouched - those are your configuration, not the plugin's UI strings, and translating
+  them automatically would silently rewrite server-specific setup.
+- **Upgrading from 0.1.0**: if you had customised `no-permission` or `reloaded` in the old
+  flat `messages.yml`, those values are copied into the new `locales/en.yml` automatically the
+  first time the plugin loads after upgrading - one-time only, so any edits you make to
+  `locales/en.yml` afterwards are never overwritten again. `messages.yml` itself is left in
+  place untouched (nothing deletes it).
+- **Reload**: `/rlscoreboard reload` now reloads locale files too, alongside config,
+  scoreboards, and leaderboards - it's the same reload path, just extended (no second reload
+  system was added).
+
+## Sidebar UI
+
+**Score numbers are hidden on every sidebar (regular boards and SIDEBAR-type
+leaderboards).** Minecraft's vanilla sidebar always had a number on the right of each line;
+that's gone now, while the underlying score is still set on every line exactly as before -
+it's the only thing that tells the client what order to display the lines in, so it can't be
+removed, only hidden from rendering.
+
+- **Mechanism**: `Objective.numberFormat(NumberFormat.blank())` -
+  `io.papermc.paper.scoreboard.numbers.NumberFormat`, part of `paper-api` itself (no new
+  dependency). Confirmed present against this project's exact target
+  (`paper-api:26.2.build.+`) via PaperMC's own javadoc before writing this - not NMS, not a
+  packet hack, not spaces/fake characters padding the text. Set once per objective, at
+  creation time - not per tick, per line, or per score, so it adds zero packet overhead
+  beyond what was already being sent.
+- **Where**: [`BoardRenderer.kt`](src/main/kotlin/dev/rlscoreboard/core/BoardRenderer.kt) is
+  the single place that creates the sidebar objective. `SidebarLeaderboardRenderer` (leaderboard
+  SIDEBAR type) publishes through the same `BoardManager` → `BoardRenderer` path, so it gets
+  the same fix automatically - there's no second sidebar code path that could've been missed.
+- **Ordering**: unaffected. `objective.getScore(entry).score = size - index` is untouched.
+
+**Default boards redesigned** (`scoreboards/survival.yml`, `scoreboards/lobby.yml`): one
+accent colour for the header, muted grey labels with white values, blank-line grouping
+instead of extra separators. Only placeholders that are always registered
+(`rl_player_name`/`rl_online`/`rl_max_players`/`rl_world`/`rl_ping`) are used live, so a fresh
+install never shows a raw `%rl_balance%`/`%rl_rank%` before Vault/LuckPerms are installed -
+those two are included as commented-out lines to uncomment once you have them. Existing
+animation and per-line condition examples are preserved, not removed.
+
+**Leaderboard rendering** (all 5 types): a `leaderboard_empty` locale key now shows a
+localized "no data yet" line/item instead of a bare title when a leaderboard has zero ranked
+entries, consistently across SIDEBAR/HOLOGRAM/TAB/NPC/GUI. The GUI type additionally got a
+shared default medal icon (🥇🥈🥉, extracted into
+[`DefaultRankIcon`](src/main/kotlin/dev/rlscoreboard/leaderboard/renderer/DefaultRankIcon.kt)
+and reused by every renderer instead of duplicating the same fallback in five places), bold
+names for the top 3, and a footer item showing how many players are ranked. A leaderboard's
+own `topIcons` config always overrides these defaults, unchanged from before.
+
 ## Building
 
 ```bash
 ./gradlew build
 ```
 
-Output jar: `build/libs/RLScoreboard-0.1.0.jar`. (No Gradle wrapper jar is bundled in this
-delivery since this environment has no network access to download it — run `gradle wrapper
---gradle-version 9.5.1` once locally, or open the project in IntelliJ and let it generate one,
-then commit `gradle/wrapper/`.)
+Output jar: `build/libs/RLScoreboard-0.3.0.jar`. `gradle/wrapper/gradle-wrapper.jar` +
+`gradlew`/`gradlew.bat` are committed (pinned to Gradle 9.5.1 via
+`gradle-wrapper.properties`, matching CI) — sourced directly from the `gradle/gradle` GitHub
+repo rather than hand-written, since the wrapper jar is a binary and the scripts are easy to
+get subtly wrong by hand. **Not executed end-to-end in the environment this was prepared in**
+(no network path to `services.gradle.org` there) — GitHub Actions is the first real test of
+it; if `./gradlew build` doesn't bootstrap cleanly, fall back to a system-installed Gradle
+9.5.1 (`gradle build`) and let us know.
 
 Requires JDK 25 to compile (matches the `paper-api:26.2.build.+` target). **This is the
-first thing to run** — see [Residual risk](#residual-risk--worth-checking-first) below for
-exactly which two files to look at first if it fails.
+first thing to run** — see [What broke on the first real build](#what-broke-on-the-first-real-build)
+below for exactly which two dependency issues to expect and how they were already fixed.
 
 ## Project layout
 
@@ -93,7 +166,7 @@ leaderboard/    LeaderboardEngine, LeaderboardManager, RankingEngine, DataSource
                 PersistentStatDataSource, AuraSkillsPowerLevelDataSource
   /renderer     SidebarLeaderboardRenderer, HologramLeaderboardRenderer,
                 TabLeaderboardRenderer, NpcLeaderboardRenderer, GuiLeaderboardRenderer
-config/         ConfigManager, BoardConfigLoader, LeaderboardConfigLoader, ConfigValidator
+config/         ConfigManager, LocaleManager, BoardConfigLoader, LeaderboardConfigLoader, ConfigValidator
 placeholder/    PlaceholderEngine, PlaceholderParser, InternalPlaceholders
 condition/      Condition, ConditionParser, ConditionEngine
 animation/      AnimationEngine
@@ -133,6 +206,19 @@ via PlaceholderAPI passthrough, just not as a directly-sortable `LeaderboardData
 anymore. If you want to revisit a native Jobs datasource later, the two options are tracking
 down and adding all five of those repositories, or asking Jobs Reborn's maintainers whether
 a lighter API-only artifact exists.
+
+> **Re-checked during Phase 4 (localization).** The original spec for this phase asked for
+> native `%rl_jobs_primary%`/`%rl_jobs_level%`/`%rl_jobs_exp%` placeholders. A web search
+> confirmed `com.github.Zrips:Jobs` is still only published via that same JitPack
+> coordinate/POM - no lighter Maven Central artifact exists - so re-adding it would very
+> likely reproduce the exact break documented above. A reflection-based integration (no
+> compile-time dependency, so no POM risk) was considered instead, but Jobs Reborn's public
+> API wiki doesn't document exact getter signatures for job name/level/experience, and
+> shipping reflective calls against guessed method names is worse than not shipping them - it
+> "compiles" but may silently do nothing or throw at runtime. **Decision: left
+> `JobsIntegration` as detection-only, unchanged.** If native Jobs data is still wanted, the
+> reliable path is providing the actual Jobs Reborn jar for this server's installed version so
+> the reflective calls can be verified against real method signatures rather than guessed.
 
 **AuraSkills, LuckPerms, PlaceholderAPI, SQLite, MySQL, Paper API, and Kotlin itself all
 resolved cleanly on the first try** - no changes needed to any of them.

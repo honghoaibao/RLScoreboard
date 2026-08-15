@@ -3,6 +3,7 @@ package dev.rlscoreboard.leaderboard.renderer
 import dev.rlscoreboard.api.LeaderboardRenderer
 import dev.rlscoreboard.api.model.LeaderboardDefinition
 import dev.rlscoreboard.api.model.LeaderboardEntry
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.util.ColorUtil
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -19,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
  * refreshes the cached snapshot on the normal leaderboard tick; [open] builds a fresh
  * inventory from whatever that latest snapshot was.
  */
-class GuiLeaderboardRenderer : LeaderboardRenderer {
+class GuiLeaderboardRenderer(private val localeManager: LocaleManager) : LeaderboardRenderer {
     override val type = "GUI"
 
     private val snapshots = ConcurrentHashMap<String, Pair<LeaderboardDefinition, List<LeaderboardEntry>>>()
@@ -45,19 +46,43 @@ class GuiLeaderboardRenderer : LeaderboardRenderer {
         entries.forEachIndexed { index, entry ->
             if (index >= size) return@forEachIndexed
             val position = index + 1
-            val icon = definition.topIcons[position] ?: "&7#$position"
-            inventory.setItem(index, buildItem(entry, icon))
+            val icon = definition.topIcons[position] ?: DefaultRankIcon.forPosition(position)
+            inventory.setItem(index, buildItem(entry, icon, position))
+        }
+        if (entries.isEmpty()) {
+            inventory.setItem(size / 2, buildEmptyStateItem())
+        } else if (size > entries.size) {
+            inventory.setItem(size - 1, buildFooterItem(entries.size))
         }
         return inventory
     }
 
-    private fun buildItem(entry: LeaderboardEntry, icon: String): ItemStack {
+    private fun buildFooterItem(count: Int): ItemStack {
+        val item = ItemStack(Material.PAPER)
+        val meta = item.itemMeta ?: return item
+        meta.displayName(ColorUtil.toComponent(localeManager.get("leaderboard_gui_footer", "count" to count.toString())))
+        item.itemMeta = meta
+        return item
+    }
+
+    private fun buildEmptyStateItem(): ItemStack {
+        val item = ItemStack(Material.PAPER)
+        val meta = item.itemMeta ?: return item
+        meta.displayName(ColorUtil.toComponent(localeManager.get("leaderboard_empty")))
+        item.itemMeta = meta
+        return item
+    }
+
+    private fun buildItem(entry: LeaderboardEntry, icon: String, position: Int): ItemStack {
         val item = ItemStack(Material.PLAYER_HEAD)
         val meta = item.itemMeta as? SkullMeta ?: return item
 
         entry.playerId?.let { uuid -> meta.owningPlayer = Bukkit.getOfflinePlayer(uuid) }
-        meta.displayName(ColorUtil.toComponent("$icon &f${entry.displayName}"))
-        meta.lore(listOf(ColorUtil.toComponent("&7Value: &f${entry.formattedValue}")))
+        // Top 3 get a bold name so they read as more prominent than the rest of the list,
+        // in addition to their medal icon (section 11 - "top 3 nổi bật").
+        val nameStyle = if (position <= 3) "&l" else ""
+        meta.displayName(ColorUtil.toComponent("$icon $nameStyle&f${entry.displayName}"))
+        meta.lore(listOf(ColorUtil.toComponent(localeManager.get("leaderboard_gui_value", "value" to entry.formattedValue))))
 
         item.itemMeta = meta
         return item

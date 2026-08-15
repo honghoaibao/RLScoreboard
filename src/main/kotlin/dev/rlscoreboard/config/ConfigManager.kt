@@ -34,6 +34,9 @@ class ConfigManager(private val plugin: JavaPlugin) {
 
     fun message(path: String, default: String): String = messages.getString(path, default) ?: default
 
+    /** Active language code from config.yml's `language` key (section 4 of the localization spec). Defaults to "en". */
+    fun language(): String = mainConfig.getString("language", "en") ?: "en"
+
     fun heartbeatTicks(): Long = mainConfig.getLong("engine.heartbeat-ticks", 4L).coerceAtLeast(1L)
 
     // ---- Storage (Phase 2) ----

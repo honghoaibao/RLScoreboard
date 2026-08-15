@@ -1,6 +1,7 @@
 package dev.rlscoreboard.core
 
 import dev.rlscoreboard.util.ColorUtil
+import io.papermc.paper.scoreboard.numbers.NumberFormat
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -39,6 +40,11 @@ class BoardRenderer(private val sessions: PlayerSessionManager) {
         val objective = scoreboard.getObjective(OBJECTIVE_NAME)
             ?: scoreboard.registerNewObjective(OBJECTIVE_NAME, Criteria.DUMMY, ColorUtil.toComponent(title)).also {
                 it.displaySlot = DisplaySlot.SIDEBAR
+                // Score numbers still exist internally (below) purely to order the lines - this
+                // makes the client not render them, via the official Paper score-display API
+                // (io.papermc.paper.scoreboard.numbers.NumberFormat, confirmed present in the
+                // paper-api 26.2 this project targets) rather than any packet/NMS hack.
+                it.numberFormat(NumberFormat.blank())
             }
 
         if (title != session.lastTitle) {

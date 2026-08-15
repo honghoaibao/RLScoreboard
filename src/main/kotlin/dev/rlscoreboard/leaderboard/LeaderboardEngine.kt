@@ -1,5 +1,6 @@
 package dev.rlscoreboard.leaderboard
 
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.core.BoardManager
 import dev.rlscoreboard.leaderboard.renderer.GuiLeaderboardRenderer
 import dev.rlscoreboard.leaderboard.renderer.HologramLeaderboardRenderer
@@ -12,14 +13,15 @@ class LeaderboardEngine(
     val dataSources: DataSourceManager,
     val ranking: RankingEngine,
     val manager: LeaderboardManager,
-    boardManager: BoardManager
+    boardManager: BoardManager,
+    localeManager: LocaleManager
 ) {
     init {
-        manager.registerRenderer(SidebarLeaderboardRenderer(boardManager))
-        manager.registerRenderer(HologramLeaderboardRenderer())
-        manager.registerRenderer(TabLeaderboardRenderer())
-        manager.registerRenderer(NpcLeaderboardRenderer())
-        manager.registerRenderer(GuiLeaderboardRenderer())
+        manager.registerRenderer(SidebarLeaderboardRenderer(boardManager, localeManager))
+        manager.registerRenderer(HologramLeaderboardRenderer(localeManager))
+        manager.registerRenderer(TabLeaderboardRenderer(localeManager))
+        manager.registerRenderer(NpcLeaderboardRenderer(localeManager))
+        manager.registerRenderer(GuiLeaderboardRenderer(localeManager))
     }
 
     fun tick(nowMillis: Long) = manager.tick(nowMillis)

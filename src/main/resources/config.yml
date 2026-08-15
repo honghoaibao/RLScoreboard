@@ -4,6 +4,12 @@
 # Per-scoreboard and per-leaderboard settings live in their own files under
 # scoreboards/ and leaderboards/ - this file only holds engine-wide options.
 
+# Supported languages:
+# en = English
+# vi = Vietnamese
+# An unrecognised value (or a missing message key within it) automatically falls back to en.
+language: en
+
 engine:
   # How often (in ticks, 20 = 1 second) the single central update task runs.
   # Individual boards/leaderboards still only refresh at their own configured

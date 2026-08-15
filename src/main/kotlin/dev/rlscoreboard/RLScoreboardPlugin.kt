@@ -8,6 +8,7 @@ import dev.rlscoreboard.condition.ConditionEngine
 import dev.rlscoreboard.config.BoardConfigLoader
 import dev.rlscoreboard.config.ConfigManager
 import dev.rlscoreboard.config.LeaderboardConfigLoader
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.core.BoardManager
 import dev.rlscoreboard.core.PlayerSessionManager
 import dev.rlscoreboard.core.ScoreboardEngine
@@ -43,6 +44,8 @@ class RLScoreboardPlugin : JavaPlugin() {
 
     lateinit var configManager: ConfigManager
         private set
+    lateinit var localeManager: LocaleManager
+        private set
     lateinit var placeholderEngine: PlaceholderEngine
         private set
     lateinit var conditionEngine: ConditionEngine
@@ -77,6 +80,9 @@ class RLScoreboardPlugin : JavaPlugin() {
         configManager = ConfigManager(this)
         configManager.loadAll()
 
+        localeManager = LocaleManager(this, configManager)
+        localeManager.load()
+
         placeholderEngine = PlaceholderEngine()
         InternalPlaceholders.registerAll(placeholderEngine)
 
@@ -98,7 +104,7 @@ class RLScoreboardPlugin : JavaPlugin() {
         val leaderboardLoader = LeaderboardConfigLoader(this, configManager.leaderboardsFolder)
         val ranking = RankingEngine()
         val leaderboardManager = LeaderboardManager(this, leaderboardLoader, dataSources, ranking)
-        leaderboardEngine = LeaderboardEngine(dataSources, ranking, leaderboardManager, boardManager)
+        leaderboardEngine = LeaderboardEngine(dataSources, ranking, leaderboardManager, boardManager, localeManager)
         leaderboardManager.reload()
 
         if (configManager.storageEnabled()) {
@@ -149,6 +155,7 @@ class RLScoreboardPlugin : JavaPlugin() {
 
     fun reloadEverything() {
         configManager.reload()
+        localeManager.reload()
         boardManager.reload()
         leaderboardEngine.manager.reload()
     }

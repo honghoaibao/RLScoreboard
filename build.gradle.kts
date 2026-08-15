@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "dev.rlscoreboard"
-version = "0.1.0"
+version = "0.3.0"
 description = "Config-driven scoreboard and leaderboard framework for Paper servers."
 
 repositories {

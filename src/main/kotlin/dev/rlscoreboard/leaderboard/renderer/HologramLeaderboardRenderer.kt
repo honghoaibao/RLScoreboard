@@ -3,6 +3,7 @@ package dev.rlscoreboard.leaderboard.renderer
 import dev.rlscoreboard.api.LeaderboardRenderer
 import dev.rlscoreboard.api.model.LeaderboardDefinition
 import dev.rlscoreboard.api.model.LeaderboardEntry
+import dev.rlscoreboard.config.LocaleManager
 import dev.rlscoreboard.util.ColorUtil
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
  * scratch on the next render after a restart, which avoids ever accumulating orphaned
  * duplicates across restarts (section 24 - graceful failure over silent breakage).
  */
-class HologramLeaderboardRenderer : LeaderboardRenderer {
+class HologramLeaderboardRenderer(private val localeManager: LocaleManager) : LeaderboardRenderer {
     override val type = "HOLOGRAM"
 
     private val active = ConcurrentHashMap<String, MutableList<TextDisplay>>()
@@ -31,9 +32,10 @@ class HologramLeaderboardRenderer : LeaderboardRenderer {
 
         val lines = mutableListOf<String>()
         lines += definition.title
+        if (entries.isEmpty()) lines += localeManager.get("leaderboard_empty")
         entries.forEachIndexed { index, entry ->
             val position = index + 1
-            val icon = definition.topIcons[position] ?: "&7#$position"
+            val icon = definition.topIcons[position] ?: DefaultRankIcon.forPosition(position)
             for (formatLine in definition.entryFormat) {
                 lines += formatLine
                     .replace("%position%", icon)
