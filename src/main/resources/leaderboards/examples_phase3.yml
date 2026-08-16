@@ -1,0 +1,64 @@
+# Examples of the TAB, NPC, and GUI leaderboard display types (see README "Leaderboard
+# display types"). TAB and NPC ship disabled since they're ambient/visible - flip
+# `enabled: true` to try them. GUI ships enabled since it has zero visible effect until a
+# player explicitly runs `/rlscoreboard leaderboard view kills_gui` - only its in-memory
+# snapshot refreshes in the background.
+leaderboards:
+
+  # Whole-server tab list footer. Only one TAB-type leaderboard should be enabled at a
+  # time - see TabLeaderboardRenderer's doc comment for why.
+  online_tab:
+    enabled: false
+    display:
+      type: TAB
+    title:
+      - "&b&lTOP PLAYTIME"
+    datasource:
+      type: topplaytime
+    entries: 5
+    update:
+      interval: 30
+    format:
+      - "&e%position% &f%player% &7- &f%value%"
+    top:
+      1: "&6🥇"
+      2: "&f🥈"
+      3: "&c🥉"
+
+  # A stationary NPC (AI-disabled Villager) with a floating text stack above it. Needs a
+  # location - set one with `/rlscoreboard leaderboard setlocation richest_npc`.
+  richest_npc:
+    enabled: false
+    display:
+      type: NPC
+    title:
+      - "&6&l🏆 TOP ĐẠI GIA"
+    datasource:
+      type: economy
+    entries: 5
+    update:
+      interval: 60
+    format:
+      - "&e%position% &f%player% &7- &f%value%$"
+    top:
+      1: "&6🥇"
+      2: "&f🥈"
+      3: "&c🥉"
+    location: {}
+
+  # A GUI snapshot, opened on demand with `/rlscoreboard leaderboard view kills_gui`
+  # (any player can run this - see RLScoreboardCommand). Not ambient like the others; it
+  # doesn't render anywhere until a player asks for it.
+  kills_gui:
+    enabled: true
+    display:
+      type: GUI
+    title:
+      - "&c&l⚔ Top Kills"
+    datasource:
+      type: topkills
+    entries: 27
+    update:
+      interval: 30
+    format:
+      - "&e%position% &f%player%"

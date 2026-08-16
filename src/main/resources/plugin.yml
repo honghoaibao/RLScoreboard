@@ -1,0 +1,40 @@
+name: RLScoreboard
+version: '${version}'
+main: dev.rlscoreboard.RLScoreboardPlugin
+api-version: '26.2'
+author: Trr
+description: Config-driven scoreboard and leaderboard framework for Paper servers.
+website: https://github.com/your-username/RLScoreboard
+
+softdepend: [PlaceholderAPI, Vault, Jobs, AuraSkills, LuckPerms, Geyser-Spigot, floodgate, WorldGuard, WorldEdit]
+
+commands:
+  rlscoreboard:
+    description: Main RLScoreboard command.
+    usage: /<command> [reload|version|debug|integrations|board|leaderboard|language|validate-language]
+    aliases: [rlsb]
+
+permissions:
+  rlscoreboard.admin:
+    description: Grants all RLScoreboard permissions.
+    default: op
+    children:
+      rlscoreboard.reload: true
+      rlscoreboard.debug: true
+      rlscoreboard.leaderboard.manage: true
+      rlscoreboard.language.admin: true
+  rlscoreboard.reload:
+    description: Allows reloading RLScoreboard's configuration.
+    default: op
+  rlscoreboard.debug:
+    description: Allows using /rlscoreboard debug and /rlscoreboard integrations.
+    default: op
+  rlscoreboard.leaderboard.manage:
+    description: Allows creating, deleting and repositioning leaderboards.
+    default: op
+  rlscoreboard.language:
+    description: Allows viewing the active/available languages (/rlscoreboard language, language list, language info).
+    default: true
+  rlscoreboard.language.admin:
+    description: Allows changing the server-wide language and validating a locale file (/rlscoreboard language set, validate-language).
+    default: op
