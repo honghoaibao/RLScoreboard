@@ -1,0 +1,71 @@
+# ==================================================
+#  RLScoreboard - main configuration
+# ==================================================
+# Per-scoreboard and per-leaderboard settings live in their own files under
+# scoreboards/ and leaderboards/ - this file only holds engine-wide options.
+
+# Tracks which schema this file is on so RLScoreboard can migrate it safely on upgrade
+# (backing up the old file first, never silently discarding your settings) instead of asking
+# you to delete and recreate it by hand. You shouldn't need to touch this yourself - see
+# ROADMAP.md's config-migration notes / ConfigMigrator if you're curious how it works.
+config-version: 1
+
+# Bundled languages: en (English, the fallback), vi (Vietnamese), ja (Japanese/日本語).
+# A community translation dropped into locales/<code>.yml works too, with zero plugin update
+# needed - see docs/TRANSLATIONS.md. An unrecognised value (or a missing message key within a
+# recognised one) automatically falls back to en.
+language: en
+
+engine:
+  # How often (in ticks, 20 = 1 second) the single central update task runs.
+  # Individual boards/leaderboards still only refresh at their own configured
+  # interval - this is just the "resolution" of the shared heartbeat clock.
+  # Lower = smoother board switching, higher = less overhead. 4 ticks (0.2s) is
+  # a good default for a server of any size.
+  heartbeat-ticks: 4
+
+# Enable extra logging for troubleshooting condition/placeholder resolution.
+debug: false
+
+# ==================================================
+#  Storage (Phase 2) - offline-inclusive leaderboards
+# ==================================================
+# Off by default. The built-in "topkills"/"topdeaths"/"topplaytime"/"economy" datasources
+# only ever ranked *online* players (see StatisticDataSource/EconomyDataSource) - turning
+# this on adds "topkills_alltime"/"topdeaths_alltime"/"topplaytime_alltime"/"economy_alltime"
+# datasources that rank every player who's ever played, backed by a small database.
+storage:
+  enabled: false
+
+  # sqlite: zero-config, a single file under the plugin's data folder - just works.
+  # mysql:  requires a MySQL/MariaDB driver to be available on the server (see README) and
+  #         the connection details below.
+  type: sqlite
+
+  sqlite:
+    file: data.db
+
+  mysql:
+    host: localhost
+    port: 3306
+    database: rlscoreboard
+    username: root
+    password: ""
+    use-ssl: false
+
+  # How often (seconds) online players' live stats get written to storage.
+  sync-interval-seconds: 60
+
+  # How often (seconds) the "*_alltime" leaderboard datasources refresh their cached
+  # ranking by querying storage. This is a separate, slower clock from a leaderboard's own
+  # `update.interval` - see AsyncRefreshingDataSource.
+  refresh-interval-seconds: 300
+
+  # How often (seconds) a timestamped snapshot of every leaderboard's current top-N is
+  # recorded, enabling "/rlscoreboard leaderboard history <id> [hours-ago]". Default: hourly.
+  history-interval-seconds: 3600
+
+  # Connection pool size. SQLite ignores this and always uses exactly 1 connection (SQLite
+  # serializes writers regardless of how many connections you open), so this only really
+  # matters for MySQL/MariaDB.
+  pool-size: 4
