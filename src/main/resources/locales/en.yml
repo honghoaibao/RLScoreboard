@@ -1,0 +1,96 @@
+# RLScoreboard - English (default) messages.
+# Colour codes use '&' (and '&#RRGGBB' for hex). Tokens in {curly braces} are substituted
+# by the plugin - keep them exactly as-is if you customise a line.
+#
+# This file is always used as the fallback for any key missing from another locale (e.g.
+# locales/vi.yml), so it must contain every key the plugin can look up.
+
+no_permission: "&cYou don't have permission to do that."
+reload_success: "&aReloaded configuration, locales, scoreboards and leaderboards."
+version: "&7RLScoreboard v{version}"
+player_only: "&cThis command must be run in-game."
+
+debug_active_board: "&7Active board: &f{board}"
+debug_loaded_boards: "&7Loaded boards: &f{count}"
+debug_loaded_leaderboards: "&7Loaded leaderboards: &f{count}"
+
+board_list: "&7Boards: &f{boards}"
+board_reload_success: "&aScoreboards reloaded."
+
+leaderboard_list: "&7Leaderboards: &f{leaderboards}"
+leaderboard_create_usage: "&cUsage: /rlscoreboard leaderboard create <id> [SIDEBAR|HOLOGRAM|TAB|NPC|GUI] [datasource]"
+leaderboard_created: "&aCreated leaderboard '{id}'."
+leaderboard_delete_usage: "&cUsage: /rlscoreboard leaderboard delete <id>"
+leaderboard_deleted: "&aDeleted leaderboard '{id}'."
+leaderboard_not_found: "&cNo leaderboard named '{id}'."
+leaderboard_setlocation_usage: "&cUsage: /rlscoreboard leaderboard setlocation <id>"
+leaderboard_location_set: "&aLocation for '{id}' set to your current position."
+leaderboard_reload_success: "&aLeaderboards reloaded."
+leaderboard_view_usage: "&cUsage: /rlscoreboard leaderboard view <id>"
+leaderboard_no_gui_snapshot: "&cNo GUI snapshot for '{id}' yet - check it's a GUI-type leaderboard and has refreshed at least once."
+leaderboard_history_usage: "&cUsage: /rlscoreboard leaderboard history <id> [hours-ago]"
+leaderboard_history_empty: "&7No history found for '{id}' around {hours} hour(s) ago."
+leaderboard_history_header: "&6'{id}' &7- snapshot from ~{hours} hour(s) ago:"
+leaderboard_history_entry: "&e#{position} &f{player} &7- &f{value}"
+leaderboard_gui_value: "&7Value: &f{value}"
+leaderboard_gui_footer: "&7Showing {count} player(s)."
+leaderboard_empty: "&7No data yet."
+
+storage_disabled: "&cStorage isn't enabled - see storage.enabled in config.yml."
+
+help_header: "&6RLScoreboard &7- &f/rlscoreboard reload|version|debug|board|leaderboard"
+help_leaderboard: "&7/rlscoreboard leaderboard list|create|delete|setlocation|reload|view|history"
+
+# ---- Integrations (design spec section F) ----
+debug_integrations_header: "&7Integrations:"
+debug_integration_available: "&a  \u2713 {name}"
+debug_integration_unavailable: "&7  - {name}"
+
+integrations_header: "&6RLScoreboard Integrations"
+integrations_line_version: "&7  Version: &f{version}"
+integrations_line_status_active: "&7  Status: &aActive"
+integrations_line_capabilities: "&7  Capabilities: &f{capabilities}"
+integrations_line_capabilities_none: "&7  Capabilities: &7none"
+integrations_line_status_not_installed: "&7  Status: &7Not installed"
+
+# ---- Localization (design spec sections J/K/L) ----
+language_current: "&7Current language: &f{locale}"
+language_usage: "&cUsage: /rlscoreboard language <list|info|set> [locale]"
+language_list: "&7Available languages: &f{locales}"
+language_info_header: "&6Language info"
+language_info_active: "&7Active: &f{locale}"
+language_info_keys: "&7Keys defined: &f{defined}&7/&f{total} &7(missing keys fall back to en)"
+language_set_success: "&aLanguage set to '{locale}' and reloaded."
+language_set_unsupported: "&cUnknown language '{locale}'. Available: {locales}"
+language_set_usage: "&cUsage: /rlscoreboard language set <locale>"
+
+validate_language_usage: "&cUsage: /rlscoreboard validate-language <locale>"
+validate_language_unknown: "&cUnknown language '{locale}'. Available: {locales}"
+validate_language_header: "&6Validating '{locale}' against the English reference..."
+validate_language_missing_keys: "&cMissing keys ({count}): &7{keys}"
+validate_language_unknown_keys: "&eUnknown keys ({count}): &7{keys}"
+validate_language_broken_placeholders: "&cBroken placeholders ({count}): &7{keys}"
+validate_language_invalid_colors: "&cInvalid color codes ({count}): &7{keys}"
+validate_language_clean: "&aNo issues found - '{locale}' is fully valid against the reference (en)."
+validate_language_summary: "&7Checked {total} reference key(s)."
+
+help_language: "&7/rlscoreboard language list|info|set <locale>  |  /rlscoreboard validate-language <locale>  |  /rlscoreboard integrations"
+
+# ---- Integration status v2 (design spec section 4: six states, not four) ----
+integrations_name_supported: "&a{icon} {name}"
+integrations_name_partial: "&e{icon} {name}"
+integrations_name_untested: "&e{icon} {name}"
+integrations_name_incompatible: "&c{icon} {name}"
+integrations_name_error: "&c{icon} {name}"
+integrations_name_not_installed: "&7{icon} {name}"
+integrations_line_status_partial: "&7  Status: &ePartially supported &7- missing: {missing}"
+integrations_line_status_untested: "&7  Status: &eDetected, not yet verified &7(tested {min}-{max}, found {version})"
+integrations_line_status_incompatible: "&7  Status: &cIncompatible &7(requires at least {min}, found {version})"
+integrations_line_status_error: "&7  Status: &cError - check the server log."
+
+# ---- /rlscoreboard status (design spec sections 24/25) ----
+status_header: "&6RLScoreboard &7v{version}"
+status_platform: "&7Platform: &f{paper} &7| Java &f{java}"
+status_players: "&7Online players: &f{count}"
+status_boards: "&7Active boards: &f{active} &7/ Configured: &f{configured}"
+status_integrations_header: "&7Integrations:"
